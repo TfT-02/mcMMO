@@ -1,6 +1,5 @@
 package com.gmail.nossr50.commands.player;
 
-import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
@@ -110,6 +109,8 @@ public class MctopCommand implements CommandExecutor {
     }
 
     private void sqlDisplay(int page, String query, CommandSender sender, Command command) {
-        mcMMO.queueManager.queue(new McTopAsync(page, query, sender, command));
+        if (mcMMO.queueManager.contains(sender.getName()) || !mcMMO.queueManager.queue(new McTopAsync(page, query, sender, command))) {
+            //Tell user to wait until their first command goes through
+        }
     }
 }

@@ -14,12 +14,15 @@ import com.gmail.nossr50.skills.utilities.SkillType;
 public class McRankAsync implements Queueable {
     private final String playerName;
     private final CommandSender sender;
+    private String player;
 
     public McRankAsync(String playerName, CommandSender sender) {
         this.playerName = playerName;
         this.sender = sender;
+        this.player = sender.getName();
     }
 
+    @Override
     public void run() {
         final Map<String, Integer> skills = Database.readSQLRank(playerName);
 
@@ -51,5 +54,13 @@ public class McRankAsync implements Queueable {
             }
 
         }, 1L);
+    }
+    
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof String) {
+            return ((String)obj).equalsIgnoreCase(player);
+        }
+        return false;
     }
 }

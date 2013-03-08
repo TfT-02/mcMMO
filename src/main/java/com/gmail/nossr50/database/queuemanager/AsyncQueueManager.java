@@ -28,8 +28,12 @@ public class AsyncQueueManager implements Runnable {
         running = false;
     }
 
-    public void queue(Queueable task) {
-        queue.add(task);
+    public boolean queue(Queueable task) {
+        return queue.offer(task);
+    }
+    
+    public boolean contains(String player) {
+        return queue.contains(player);
     }
 
 }

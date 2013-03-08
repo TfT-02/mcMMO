@@ -22,14 +22,17 @@ public class McTopAsync implements Queueable {
     private String query;
     private int page;
     private Command command;
+    private String player;
 
     public McTopAsync(int page, String query, CommandSender sender, Command command) {
         this.page = page;
         this.query = query;
         this.sender = sender;
         this.command = command;
+        this.player = sender.getName();
     }
 
+    @Override
     public void run() {
         if (!query.equalsIgnoreCase("taming+mining+woodcutting+repair+unarmed+herbalism+excavation+archery+swords+axes+acrobatics+fishing")) {
             if (!Permissions.mctop(sender, SkillType.getSkill(query))) {
@@ -64,4 +67,11 @@ public class McTopAsync implements Queueable {
         }, 1L);
     }
 
+    @Override
+    public boolean equals(Object obj) {
+        if (obj instanceof String) {
+            return ((String)obj).equalsIgnoreCase(player);
+        }
+        return false;
+    }
 }

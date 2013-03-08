@@ -1,6 +1,5 @@
 package com.gmail.nossr50.commands.player;
 
-import org.bukkit.Bukkit;
 import org.bukkit.command.Command;
 import org.bukkit.command.CommandExecutor;
 import org.bukkit.command.CommandSender;
@@ -119,6 +118,8 @@ public class McrankCommand implements CommandExecutor {
     }
 
     private void sqlDisplay(CommandSender sender, String playerName) {
-        mcMMO.queueManager.queue(new McRankAsync(playerName, sender));
+        if (mcMMO.queueManager.contains(sender.getName()) || !mcMMO.queueManager.queue(new McRankAsync(playerName, sender))) {
+            //Tell user to wait until their first command goes through
+        }
     }
 }
