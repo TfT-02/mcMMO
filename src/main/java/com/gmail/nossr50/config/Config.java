@@ -53,6 +53,7 @@ public class Config extends ConfigLoader {
     public String getMySQLUserName() { return getStringIncludingInts(config, "MySQL.Database.User_Name"); }
     public int getMySQLServerPort() { return config.getInt("MySQL.Server.Port", 3306); }
     public String getMySQLServerName() { return config.getString("MySQL.Server.Address", "localhost"); }
+    public long getQueueThrottle() { return config.getLong("MySQL.QueueThrottle", 100L); }
 
     public String getMySQLUserPassword() {
         if (getStringIncludingInts(config, "MySQL.Database.User_Password") != null) {
@@ -435,4 +436,5 @@ public class Config extends ConfigLoader {
         int cap = config.getInt(configString, 0);
         return ((cap <= 0) ? Integer.MAX_VALUE : cap);
     }
+
 }

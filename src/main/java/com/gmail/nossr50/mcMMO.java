@@ -333,7 +333,7 @@ public class mcMMO extends JavaPlugin {
         scheduler.scheduleSyncRepeatingTask(this, new BleedTimer(), 40, 40);
         
         if (Config.getInstance().getUseMySQL()) {
-            queueManager = new AsyncQueueManager();
+            queueManager = new AsyncQueueManager(Config.getInstance().getQueueThrottle());
             scheduler.scheduleAsyncDelayedTask(this, queueManager, 1L);
         }
 
