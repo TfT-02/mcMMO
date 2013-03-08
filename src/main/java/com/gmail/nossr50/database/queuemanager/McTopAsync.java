@@ -68,10 +68,8 @@ public class McTopAsync implements Queueable {
     }
 
     @Override
-    public boolean equals(Object obj) {
-        if (obj instanceof String) {
-            return ((String)obj).equalsIgnoreCase(player);
-        }
-        return false;
+    public String getPlayer() {
+        return player;
     }
+
 }

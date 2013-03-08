@@ -33,7 +33,21 @@ public class AsyncQueueManager implements Runnable {
     }
     
     public boolean contains(String player) {
-        return queue.contains(player);
+        return queue.contains(new EqualString(player));
+    }
+    
+    private class EqualString {
+        private String player;
+        public EqualString(String player) {
+            this.player = player;
+        }
+        @Override
+        public boolean equals(Object obj) {
+            if (obj instanceof Queueable) {
+                return ((Queueable)obj).getPlayer().equalsIgnoreCase(player);
+            }
+            return false;
+        }
     }
 
 }
