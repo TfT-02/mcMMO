@@ -26,6 +26,7 @@ import com.gmail.nossr50.config.HiddenConfig;
 import com.gmail.nossr50.config.TreasuresConfig;
 import com.gmail.nossr50.database.Database;
 import com.gmail.nossr50.database.Leaderboard;
+import com.gmail.nossr50.database.queuemanager.AsyncQueueManager;
 import com.gmail.nossr50.database.runnables.UserPurgeTask;
 import com.gmail.nossr50.datatypes.PlayerProfile;
 import com.gmail.nossr50.listeners.BlockListener;
@@ -67,6 +68,7 @@ public class mcMMO extends JavaPlugin {
 
     public static ChunkManager placeStore;
     public static RepairManager repairManager;
+    public static AsyncQueueManager queueManager;
 
     // Jar Stuff
     public static File mcmmo;
@@ -329,6 +331,11 @@ public class mcMMO extends JavaPlugin {
         scheduler.scheduleSyncRepeatingTask(this, new SkillMonitor(), 20, 20);
         // Bleed timer (Runs every two seconds)
         scheduler.scheduleSyncRepeatingTask(this, new BleedTimer(), 40, 40);
+        
+        if (Config.getInstance().getUseMySQL()) {
+            queueManager = new AsyncQueueManager();
+            scheduler.scheduleAsyncDelayedTask(this, queueManager, 1L);
+        }
 
         // Old & Powerless User remover
         int purgeInterval = Config.getInstance().getPurgeInterval();

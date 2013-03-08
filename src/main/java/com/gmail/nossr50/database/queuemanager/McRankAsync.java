@@ -1,4 +1,4 @@
-package com.gmail.nossr50.runnables;
+package com.gmail.nossr50.database.queuemanager;
 
 import java.util.Map;
 
@@ -11,7 +11,7 @@ import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.skills.utilities.SkillTools;
 import com.gmail.nossr50.skills.utilities.SkillType;
 
-public class McRankAsync implements Runnable {
+public class McRankAsync implements Queueable {
     private final String playerName;
     private final CommandSender sender;
 
@@ -20,7 +20,6 @@ public class McRankAsync implements Runnable {
         this.sender = sender;
     }
 
-    @Override
     public void run() {
         final Map<String, Integer> skills = Database.readSQLRank(playerName);
 

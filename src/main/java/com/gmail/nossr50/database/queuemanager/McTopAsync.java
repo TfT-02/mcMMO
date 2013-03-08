@@ -1,4 +1,4 @@
-package com.gmail.nossr50.runnables;
+package com.gmail.nossr50.database.queuemanager;
 
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -16,7 +16,7 @@ import com.gmail.nossr50.skills.utilities.SkillType;
 import com.gmail.nossr50.util.Permissions;
 import com.gmail.nossr50.util.StringUtils;
 
-public class McTopAsync implements Runnable {
+public class McTopAsync implements Queueable {
 
     private CommandSender sender;
     private String query;
@@ -30,7 +30,6 @@ public class McTopAsync implements Runnable {
         this.command = command;
     }
 
-    @Override
     public void run() {
         if (!query.equalsIgnoreCase("taming+mining+woodcutting+repair+unarmed+herbalism+excavation+archery+swords+axes+acrobatics+fishing")) {
             if (!Permissions.mctop(sender, SkillType.getSkill(query))) {

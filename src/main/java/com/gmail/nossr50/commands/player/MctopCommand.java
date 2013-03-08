@@ -9,8 +9,8 @@ import org.bukkit.command.CommandSender;
 import com.gmail.nossr50.mcMMO;
 import com.gmail.nossr50.config.Config;
 import com.gmail.nossr50.database.Leaderboard;
+import com.gmail.nossr50.database.queuemanager.McTopAsync;
 import com.gmail.nossr50.locale.LocaleLoader;
-import com.gmail.nossr50.runnables.McTopAsync;
 import com.gmail.nossr50.skills.utilities.SkillTools;
 import com.gmail.nossr50.skills.utilities.SkillType;
 import com.gmail.nossr50.util.Permissions;
@@ -110,6 +110,6 @@ public class MctopCommand implements CommandExecutor {
     }
 
     private void sqlDisplay(int page, String query, CommandSender sender, Command command) {
-        Bukkit.getScheduler().runTaskAsynchronously(mcMMO.p, new McTopAsync(page, query, sender, command));
+        mcMMO.queueManager.queue(new McTopAsync(page, query, sender, command));
     }
 }
