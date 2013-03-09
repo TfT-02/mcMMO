@@ -334,7 +334,7 @@ public class mcMMO extends JavaPlugin {
         
         if (Config.getInstance().getUseMySQL()) {
             queueManager = new AsyncQueueManager(Config.getInstance().getQueueThrottle());
-            scheduler.scheduleAsyncDelayedTask(this, queueManager, 1L);
+            scheduler.runTaskAsynchronously(this, queueManager);
         }
 
         // Old & Powerless User remover
