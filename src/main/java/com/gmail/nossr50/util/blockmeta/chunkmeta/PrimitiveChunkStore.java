@@ -93,6 +93,15 @@ public class PrimitiveChunkStore implements ChunkStore {
         dirty = true;
     }
 
+    public void update() {
+        if (cz < 0) {
+            cz--;
+        }
+        if (cx < 0) {
+            cx--;
+        }
+    }
+
     private void writeObject(ObjectOutputStream out) throws IOException {
         out.writeInt(MAGIC_NUMBER);
         out.writeInt(CURRENT_VERSION);

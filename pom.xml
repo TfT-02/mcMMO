@@ -52,6 +52,21 @@
                 </configuration>
             </plugin>
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-jar-plugin</artifactId>
+                <version>2.1</version>
+                <configuration>
+                    <archive>
+                        <manifestEntries>
+                          <Main-Class>com.gmail.nossr50.Main</Main-Class>
+                          <Implementation-Title>mcMMO</Implementation-Title>
+                          <Implementation-Version>${version}</Implementation-Version>
+                          <Implementation-Vendor>mcMMO Team</Implementation-Vendor>
+                        </manifestEntries>
+                    </archive>
+                </configuration>
+            </plugin>
+            <plugin>
                 <artifactId>maven-assembly-plugin</artifactId>
                 <configuration>
                     <descriptors>

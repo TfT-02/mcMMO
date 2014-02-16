@@ -103,6 +103,14 @@ public class McMMOSimpleRegionFile {
         }
     }
 
+    public synchronized final int getX() {
+        return rx;
+    }
+
+    public synchronized final int getZ() {
+        return rz;
+    }
+
     public synchronized final RandomAccessFile getFile() {
         lastAccessTime = System.currentTimeMillis();
         if (file == null) {
