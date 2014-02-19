@@ -7,12 +7,8 @@ import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
-import java.util.Map.Entry;
-
 import com.gmail.nossr50.util.blockmeta.chunkmeta.ChunkStore;
 import com.gmail.nossr50.util.blockmeta.chunkmeta.McMMOSimpleRegionFile;
 import com.gmail.nossr50.util.blockmeta.chunkmeta.PrimitiveChunkStore;
@@ -22,40 +18,57 @@ public class Main {
     public static final HashMap<Long, McMMOSimpleRegionFile> newWorldRegions = new HashMap<Long, McMMOSimpleRegionFile>();
     public static final List<ChunkStore> chunkRegions = new ArrayList<ChunkStore>();
     public static String filePath;
-    public static void main(String[] args) throws IOException {
-        filePath = Main.class.getClass().getResource("").getPath();
+    public static void main(String[] args) throws IOException, InterruptedException {
+        filePath = args[0];
         new Main();
     }
 
-    public Main() throws IOException {
-        List<File> files = Arrays.asList(new File(filePath).listFiles(new ChunkStoreFilter()));
-        while (!files.isEmpty()) {
-            loadSimpleRegionFile(files.remove(0)); // Load files for conversion
+    protected boolean done = false;
+
+    public Main() throws IOException, InterruptedException {
+        File[] files = new File(filePath).listFiles(new ChunkStoreFilter());
+        for (File file : files) {
+            convertSimpleRegionFile(file); // Load files for conversion
         }
-        Iterator<Entry<Long, McMMOSimpleRegionFile>> iterator = worldRegions.entrySet().iterator();
-        while (iterator.hasNext()) {
-            Entry<Long, McMMOSimpleRegionFile> entry = iterator.next();
-            iterator.remove();
-            McMMOSimpleRegionFile original = entry.getValue();
+    }
+    private void convertSimpleRegionFile(File file) {
+
+        try {
+            McMMOSimpleRegionFile original = loadSimpleRegionFile(file);
+            if (original == null) {
+                return;
+            }
             int rx = original.getX();
             int rz = original.getZ();
             // Grab all chunks from region
             for (int x = rx << 5; x < (rx << 5) + 32; x++) {
                 for (int z = rz << 5; z < (rz << 5) + 32; z++) {
                     PrimitiveChunkStore chunk = getChunkStore(original, x, z);
+                    if (chunk == null) {
+                        continue;
+                    }
                     chunk.update(); // Correct chunk coordinates
                     chunkRegions.add(chunk); // Add to save queue
                 }
             }
-            while (!chunkRegions.isEmpty()) { // Save all chunks in queue
+            original.close();
+            file.delete();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        while (!chunkRegions.isEmpty()) { // Save all chunks in queue
+            try {
+                // Get correct region file for storage
                 ChunkStore chunk = chunkRegions.remove(0);
-                McMMOSimpleRegionFile rf = getSimpleRegionFile(chunk.getChunkX(), chunk.getChunkZ()); // Get correct region file for storage
+                McMMOSimpleRegionFile rf = getSimpleRegionFile(chunk.getChunkX(), chunk.getChunkZ());
                 ObjectOutputStream objectStream = new ObjectOutputStream(rf.getOutputStream(chunk.getChunkX(), chunk.getChunkZ()));
+
                 objectStream.writeObject(chunk); // Write chunk to file
                 objectStream.flush();
                 objectStream.close();
+            } catch (Exception e) {
+                e.printStackTrace();
             }
-            new File(new File(filePath), "mcmmo_" + rx + "_" + rz + "_.mcm").delete(); // Delete file now that all data has been transfered
         }
     }
     private PrimitiveChunkStore getChunkStore(McMMOSimpleRegionFile rf, int x, int z) throws IOException {
@@ -96,7 +109,7 @@ public class Main {
         return file;
     }
 
-    private void loadSimpleRegionFile(File file) {
+    private McMMOSimpleRegionFile loadSimpleRegionFile(File file) {
         // Parse coordinates
         String coordString = file.getName().substring(6);
         coordString = coordString.substring(0, coordString.length() - 5);
@@ -106,10 +119,10 @@ public class Main {
         if (rx >= 0 && rz >= 0) { // Only chunks with negative coords are messed up, so we can just rename positive ones
             file.renameTo(new File(new File(filePath), "mcmmo_" + rx + "_" + rz + "_.v1.mcm"));
             file.delete();
-            return;
+            return null;
         }
-        long key2 = (((long) rx) << 32) | ((rz) & 0xFFFFFFFFL);
-        worldRegions.put(key2, new McMMOSimpleRegionFile(file, rx, rz)); // Store loaded file for conversion
+
+        return new McMMOSimpleRegionFile(file, rx, rz); // Store loaded file for conversion
     }
 
     class ChunkStoreFilter implements FilenameFilter {
