@@ -2,8 +2,6 @@ package com.gmail.nossr50.util.blockmeta.chunkmeta;
 
 import java.io.Serializable;
 
-import com.gmail.nossr50.util.blockmeta.ChunkletStore;
-
 /**
  * A ChunkStore should be responsible for a 16x16xWorldHeight area of data
  */
@@ -68,11 +66,4 @@ public interface ChunkStore extends Serializable {
      * @return true if all values in the chunklet are false, false if otherwise
      */
     public boolean isEmpty();
-
-    /**
-     * Set all values in this ChunkletStore to the values from another provided ChunkletStore
-     *
-     * @param otherStore Another ChunkletStore that this one should copy all data from
-     */
-    public void copyFrom(ChunkletStore otherStore);
 }

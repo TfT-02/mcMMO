@@ -17,12 +17,11 @@ import org.bukkit.block.BlockState;
 import org.bukkit.entity.Entity;
 
 import com.gmail.nossr50.mcMMO;
-import com.gmail.nossr50.util.blockmeta.conversion.BlockStoreConversionZDirectory;
 
 public class HashChunkManager implements ChunkManager {
+    private static final int FORMAT = 1;
     private HashMap<UUID, HashMap<Long, McMMOSimpleRegionFile>> regionFiles = new HashMap<UUID, HashMap<Long, McMMOSimpleRegionFile>>();
     public HashMap<String, ChunkStore> store = new HashMap<String, ChunkStore>();
-    public ArrayList<BlockStoreConversionZDirectory> converters = new ArrayList<BlockStoreConversionZDirectory>();
     private HashMap<UUID, Boolean> oldData = new HashMap<UUID, Boolean>();
 
     @Override
@@ -120,7 +119,12 @@ public class HashChunkManager implements ChunkManager {
         McMMOSimpleRegionFile regionFile = worldRegions.get(key2);
 
         if (regionFile == null) {
-            File file = new File(directory, "mcmmo_" + rx + "_" + rz + "_.mcm");
+            File file;
+            if (oldData.get(world.getUID())) {
+                file = new File(directory, "mcmmo_" + rx + "_" + rz + "_.mcm");
+            } else {
+                file = new File(directory, "mcmmo_" + rx + "_" + rz + "_.v" + FORMAT + ".mcm");
+            }
             regionFile = new McMMOSimpleRegionFile(file, rx, rz);
             worldRegions.put(key2, regionFile);
         }
@@ -147,11 +151,24 @@ public class HashChunkManager implements ChunkManager {
         UUID key = world.getUID();
 
         if (!oldData.containsKey(key)) {
-            oldData.put(key, (new File(world.getWorldFolder(), "mcmmo_data")).exists());
+            // TODO: Eventually use FORMAT version instead of boolean, but right now that doesn't matter
+            File file = new File(new File(world.getWorldFolder(), "mcmmo_regions"), "mcMMO.format");
+            if (!file.isFile()) {
+                mcMMO.p.getLogger().severe("World " + world.getName() + " is using a mcMMO ChunkStore format with known exploits.");
+                mcMMO.p.getLogger().severe("It is recommended that you convert to the new file format for them immediately.");
+                mcMMO.p.getLogger().severe("Instructions to do so can be found at www.placeholderURL.com"); // TODO: Real link
+                oldData.put(key, true);
+            } else {
+                oldData.put(key, false);
+            }
         }
         else if (oldData.get(key)) {
-            if (convertChunk(new File(world.getWorldFolder(), "mcmmo_data"), cx, cz, world, true)) {
-                return;
+            // Old files are off by one
+            if (cx < 0) {
+                cx++;
+            }
+            if (cz < 0) {
+                cz++;
             }
         }
 
@@ -293,8 +310,8 @@ public class HashChunkManager implements ChunkManager {
             return false;
         }
 
-        int cx = x / 16;
-        int cz = z / 16;
+        int cx = x >> 4;
+        int cz = z >> 4;
         String key = world.getName() + "," + cx + "," + cz;
 
         if (!store.containsKey(key)) {
@@ -336,8 +353,8 @@ public class HashChunkManager implements ChunkManager {
             return;
         }
 
-        int cx = x / 16;
-        int cz = z / 16;
+        int cx = x >> 4;
+        int cz = z >> 4;
 
         int ix = Math.abs(x) % 16;
         int iz = Math.abs(z) % 16;
@@ -382,8 +399,8 @@ public class HashChunkManager implements ChunkManager {
             return;
         }
 
-        int cx = x / 16;
-        int cz = z / 16;
+        int cx = x >> 4;
+        int cz = z >> 4;
 
         int ix = Math.abs(x) % 16;
         int iz = Math.abs(z) % 16;
@@ -423,48 +440,4 @@ public class HashChunkManager implements ChunkManager {
 
     @Override
     public synchronized void cleanUp() {}
-
-    public synchronized void convertChunk(File dataDir, int cx, int cz, World world) {
-        convertChunk(dataDir, cx, cz, world, false);
-    }
-
-    public synchronized boolean convertChunk(File dataDir, int cx, int cz, World world, boolean actually) {
-        if (!actually || !dataDir.exists()) {
-            return false;
-        }
-
-        File cxDir = new File(dataDir, "" + cx);
-        if (!cxDir.exists()) {
-            return false;
-        }
-
-        File czDir = new File(cxDir, "" + cz);
-        if (!czDir.exists()) {
-            return false;
-        }
-
-        boolean conversionSet = false;
-
-        for (BlockStoreConversionZDirectory converter : this.converters) {
-            if (converter == null) {
-                continue;
-            }
-
-            if (converter.taskID >= 0) {
-                continue;
-            }
-
-            converter.start(world, cxDir, czDir);
-            conversionSet = true;
-            break;
-        }
-
-        if (!conversionSet) {
-            BlockStoreConversionZDirectory converter = new BlockStoreConversionZDirectory();
-            converter.start(world, cxDir, czDir);
-            converters.add(converter);
-        }
-
-        return true;
-    }
 }

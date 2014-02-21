@@ -50,6 +50,10 @@ public class McMMOSimpleRegionFile {
         this(f, rx, rz, 10);
     }
 
+    public McMMOSimpleRegionFile(File f, int rx, int rz, boolean readOnly) {
+        this(f, rx, rz, 10, readOnly);
+    }
+
     public McMMOSimpleRegionFile(File f, int rx, int rz, int defaultSegmentSize) {
         this.rx = rx;
         this.rz = rz;
@@ -96,6 +100,51 @@ public class McMMOSimpleRegionFile {
                 }
 
                 extendFile();
+            }
+            catch (IOException fnfe) {
+                throw new RuntimeException(fnfe);
+            }
+        }
+    }
+
+    public McMMOSimpleRegionFile(File f, int rx, int rz, int defaultSegmentSize, boolean readOnly) {
+        this.rx = rx;
+        this.rz = rz;
+        this.defaultSegmentSize = defaultSegmentSize;
+        this.parent = f;
+
+        lastAccessTime = System.currentTimeMillis();
+        if (file == null) {
+            try {
+                this.file = new RandomAccessFile(parent, "r");
+
+                if (file.length() < 4096 * 3) {
+                    this.segmentSize = defaultSegmentSize;
+                } else {
+                    file.seek(4096 * 2);
+                    this.segmentSize = file.readInt();
+                }
+
+                int reservedSegments = this.sizeToSegments(4096 * 3);
+
+                for (int i = 0; i < reservedSegments; i++) {
+                    while (inuse.size() <= i) {
+                        inuse.add(false);
+                    }
+                    inuse.set(i, true);
+                }
+
+                file.seek(0);
+
+                for (int i = 0; i < 1024; i++) {
+                    dataStart[i] = file.readInt();
+                }
+
+                for (int i = 0; i < 1024; i++) {
+                    dataActualLength[i] = file.readInt();
+                    dataLength[i] = sizeToSegments(dataActualLength[i]);
+                    setInUse(i, true);
+                }
             }
             catch (IOException fnfe) {
                 throw new RuntimeException(fnfe);
