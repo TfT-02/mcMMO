@@ -17,16 +17,16 @@ public class Main {
     public static final HashMap<Long, McMMOSimpleRegionFile> worldRegions = new HashMap<Long, McMMOSimpleRegionFile>();
     public static final HashMap<Long, McMMOSimpleRegionFile> newWorldRegions = new HashMap<Long, McMMOSimpleRegionFile>();
     public static final List<ChunkStore> chunkRegions = new ArrayList<ChunkStore>();
-    public static String filePath;
+    public static File directory;
     public static void main(String[] args) throws IOException, InterruptedException {
-        filePath = args[0];
+        directory = new File(args[0]);
         new Main();
     }
 
     protected boolean done = false;
 
     public Main() throws IOException, InterruptedException {
-        File[] files = new File(filePath).listFiles(new ChunkStoreFilter());
+        File[] files = directory.listFiles(new ChunkStoreFilter());
         for (File file : files) {
             convertSimpleRegionFile(file); // Load files for conversion
         }
@@ -71,6 +71,125 @@ public class Main {
             }
         }
     }
+
+    public void writeNewRegionFile(int x, int z) throws IOException {
+        McMMOSimpleRegionFile newFile = new McMMOSimpleRegionFile(new File(directory, "mcmmo_" + x + "_" + z + "_.v1.mcm"), x, z);
+        File bulkRegion = new File(directory, "mcmmo_" + x + "_" + z + "_.mcm");
+        File leftRegion = new File(directory, "mcmmo_" + (x + 1) + "_" + z + "_.mcm");
+        File lowerRegion = new File(directory, "mcmmo_" + x + "_" + (z + 1) + "_.mcm");
+        File lowerLeftRegion = new File(directory, "mcmmo_" + (x + 1) + "_" + (z + 1) + "_.mcm");
+        if (bulkRegion.isFile()) {
+            int rx = x;
+            int rz = z;
+            McMMOSimpleRegionFile original = new McMMOSimpleRegionFile(bulkRegion, rx, rz);
+
+            int cx = rx << 5;
+            if (cx < 0) {
+                cx++;
+            }
+            for (; cx < (rx << 5) + 32; cx++) {
+                int cz = rz << 5;
+                if (cz < 0) {
+                    cz++;
+                }
+                for (; cz < (rz << 5) + 32; cz++) {
+                    ChunkStore chunk = getChunkStore(original, cx, cz);
+                    if (chunk == null) {
+                        continue;
+                    }
+                    int ncx = cx;
+                    if (cx < 0) {
+                        ncx--;
+                    }
+                    int ncz = cz;
+                    if (cz < 0) {
+                        ncz--;
+                    }
+                    writeChunkStore(newFile, ncx, ncz, chunk);
+                }
+            }
+        }
+        if (leftRegion.isFile() && x < 0) {
+            int rx = x + 1;
+            int rz = z;
+            McMMOSimpleRegionFile original = new McMMOSimpleRegionFile(leftRegion, rx, rz);
+
+            int cx = (rx << 5);
+            for (int cz = rz << 5; cz < (rz << 5) + 32; cz++) {
+                ChunkStore chunk = getChunkStore(original, cx, cz);
+                if (chunk == null) {
+                    continue;
+                }
+                int ncx = cx;
+                if (cx < 0) {
+                    ncx--;
+                }
+                int ncz = cz;
+                if (cz < 0) {
+                    ncz--;
+                }
+                writeChunkStore(newFile, ncx, ncz, chunk);
+            }
+        }
+        if (lowerRegion.isFile() && z < 0) {
+            int rx = x;
+            int rz = z + 1;
+            McMMOSimpleRegionFile original = new McMMOSimpleRegionFile(lowerRegion, rx, rz);
+
+            int cz = (rz << 5);
+            for (int cx = rx << 5; cx < (rx << 5) + 32; cx++) {
+                ChunkStore chunk = getChunkStore(original, cx, cz);
+                if (chunk == null) {
+                    continue;
+                }
+                int ncx = cx;
+                if (cx < 0) {
+                    ncx--;
+                }
+                int ncz = cz;
+                if (cz < 0) {
+                    ncz--;
+                }
+                writeChunkStore(newFile, ncx, ncz, chunk);
+            }
+        }
+        if (lowerLeftRegion.isFile() && x < 0 && z < 0) {
+            int rx = x + 1;
+            int rz = z + 1;
+            McMMOSimpleRegionFile original = new McMMOSimpleRegionFile(lowerLeftRegion, rx, rz);
+
+            int cz = (rz << 5);
+            int cx = (rx << 5);
+            ChunkStore chunk = getChunkStore(original, cx, cz);
+            if (chunk != null) {
+                int ncx = cx;
+                if (cx < 0) {
+                    ncx--;
+                }
+                int ncz = cz;
+                if (cz < 0) {
+                    ncz--;
+                }
+                writeChunkStore(newFile, ncx, ncz, chunk);
+            }
+        }
+    }
+
+    private void writeChunkStore(McMMOSimpleRegionFile file, int x, int z, ChunkStore data) {
+        if (!data.isDirty()) {
+            return;
+        }
+        try {
+            ObjectOutputStream objectStream = new ObjectOutputStream(file.getOutputStream(x, z));
+            objectStream.writeObject(data);
+            objectStream.flush();
+            objectStream.close();
+            data.setDirty(false);
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to write chunk meta data for " + x + ", " + z, e);
+        }
+    }
+            
     private PrimitiveChunkStore getChunkStore(McMMOSimpleRegionFile rf, int x, int z) throws IOException {
         InputStream in = rf.getInputStream(x, z);
         if (in == null) {
@@ -103,7 +222,7 @@ public class Main {
         long key2 = (((long) rx) << 32) | ((rz) & 0xFFFFFFFFL);
         McMMOSimpleRegionFile file = newWorldRegions.get(key2);
         if (file == null) {
-            file = new McMMOSimpleRegionFile(new File(new File(filePath), "mcmmo_" + rx + "_" + rz + "_.v1.mcm"), rx, rz);
+            file = new McMMOSimpleRegionFile(new File(directory, "mcmmo_" + rx + "_" + rz + "_.v1.mcm"), rx, rz);
             newWorldRegions.put(key2, file);
         }
         return file;
@@ -117,7 +236,7 @@ public class Main {
         int rx = Integer.valueOf(coords[0]);
         int rz = Integer.valueOf(coords[1]);
         if (rx >= 0 && rz >= 0) { // Only chunks with negative coords are messed up, so we can just rename positive ones
-            file.renameTo(new File(new File(filePath), "mcmmo_" + rx + "_" + rz + "_.v1.mcm"));
+            file.renameTo(new File(directory, "mcmmo_" + rx + "_" + rz + "_.v1.mcm"));
             file.delete();
             return null;
         }
