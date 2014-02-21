@@ -90,7 +90,7 @@ public class PrimitiveChunkStore implements ChunkStore {
         dirty = true;
     }
 
-    public void update() {
+    public void convertCoordinatesToVersionOne() {
         if (cz < 0) {
             cz--;
         }
