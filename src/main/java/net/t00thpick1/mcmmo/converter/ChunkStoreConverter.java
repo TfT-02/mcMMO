@@ -237,7 +237,7 @@ public class ChunkStoreConverter {
                     continue;
                 }
                 int newChunkX = chunkX;
-                if (chunkX < 0) {
+                if (chunkX <= 0) {
                     newChunkX--;
                 }
                 int newChunkZ = chunkZ;
@@ -267,7 +267,7 @@ public class ChunkStoreConverter {
                     newChunkX--;
                 }
                 int newChunkZ = chunkZ;
-                if (chunkZ < 0) {
+                if (chunkZ <= 0) {
                     newChunkZ--;
                 }
                 chunk.convertCoordinatesToVersionOne();
@@ -287,11 +287,11 @@ public class ChunkStoreConverter {
             PrimitiveChunkStore chunk = getChunkStore(original, chunkX, chunkZ);
             if (chunk != null) {
                 int newChunkX = chunkX;
-                if (chunkX < 0) {
+                if (chunkX <= 0) {
                     newChunkX--;
                 }
                 int newChunkZ = chunkZ;
-                if (chunkZ < 0) {
+                if (chunkZ <= 0) {
                     newChunkZ--;
                 }
                 chunk.convertCoordinatesToVersionOne();
