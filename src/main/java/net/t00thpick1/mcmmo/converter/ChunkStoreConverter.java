@@ -50,20 +50,16 @@ public class ChunkStoreConverter {
         private final int regionZ;
         private final File file;
         private final Map<List<Integer>, Wrapper> wrappers;
-        
+
         Wrapper(int x, int z, Map<List<Integer>, Wrapper> wrappers) {
             this.regionX = x;
             this.regionZ = z;
             this.wrappers = wrappers;
             
             this.file = new File(directory, "mcmmo_" + regionX + "_" + regionZ + "_.mcm");
-            this.reads = new AtomicInteger(
-                (regionX < 0) && (regionZ < 0)
-                    ? 4
-                    : 2
-                );
+            this.reads = new AtomicInteger((regionX < 0) && (regionZ < 0) ? 4 : 2 );
         }
-        
+
         void decrementUses() {
             if (reads.decrementAndGet() == 0 && file.exists()) {
                 if (!file.delete()) {
@@ -217,6 +213,12 @@ public class ChunkStoreConverter {
                     if (chunkZ < 0) {
                         newChunkZ--;
                     }
+                    if (newChunkX >> 5 != regionX) {
+                        continue;
+                    }
+                    if (newChunkZ >> 5 != regionZ) {
+                        continue;
+                    }
                     chunk.convertCoordinatesToVersionOne();
                     writeChunkStore(newFile, newChunkX, newChunkZ, chunk);
                 }
@@ -244,6 +246,9 @@ public class ChunkStoreConverter {
                 if (chunkZ < 0) {
                     newChunkZ--;
                 }
+                if (newChunkX >> 5 != regionX) {
+                    continue;
+                }
                 chunk.convertCoordinatesToVersionOne();
                 writeChunkStore(newFile, newChunkX, newChunkZ, chunk);
             }
@@ -270,6 +275,9 @@ public class ChunkStoreConverter {
                 if (chunkZ <= 0) {
                     newChunkZ--;
                 }
+                if (newChunkZ >> 5 != regionZ) {
+                    continue;
+                }
                 chunk.convertCoordinatesToVersionOne();
                 writeChunkStore(newFile, newChunkX, newChunkZ, chunk);
             }
@@ -294,8 +302,10 @@ public class ChunkStoreConverter {
                 if (chunkZ <= 0) {
                     newChunkZ--;
                 }
-                chunk.convertCoordinatesToVersionOne();
-                writeChunkStore(newFile, newChunkX, newChunkZ, chunk);
+                if (newChunkX >> 5 == regionX && newChunkZ >> 5 == regionZ) {
+                    chunk.convertCoordinatesToVersionOne();
+                    writeChunkStore(newFile, newChunkX, newChunkZ, chunk);
+                }
             }
 
             original.close();
