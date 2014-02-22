@@ -120,7 +120,8 @@ public class McMMOSimpleRegionFile {
 
                 if (file.length() < 4096 * 3) {
                     this.segmentSize = defaultSegmentSize;
-                } else {
+                }
+                else {
                     file.seek(4096 * 2);
                     this.segmentSize = file.readInt();
                 }

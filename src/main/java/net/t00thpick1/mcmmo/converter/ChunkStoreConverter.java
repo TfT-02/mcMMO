@@ -18,16 +18,17 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadFactory;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import net.t00thpick1.mcmmo.com.wolvereness.overmapped.lib.MultiProcessor;
-
 import com.gmail.nossr50.util.blockmeta.chunkmeta.ChunkStore;
 import com.gmail.nossr50.util.blockmeta.chunkmeta.McMMOSimpleRegionFile;
 import com.gmail.nossr50.util.blockmeta.chunkmeta.PrimitiveChunkStore;
+
+import net.t00thpick1.mcmmo.com.wolvereness.overmapped.lib.MultiProcessor;
 
 @SuppressWarnings("javadoc")
 public class ChunkStoreConverter {
     public static File directory;
     public static int threadCount = 5;
+
     public static void main(String[] args) throws IOException, InterruptedException {
         if (args.length == 0) {
             System.out.println("[mcMMO] Need folder path");
@@ -43,7 +44,7 @@ public class ChunkStoreConverter {
         }
         new ChunkStoreConverter();
     }
-    
+
     class Wrapper implements Runnable {
         private final AtomicInteger reads;
         private final int regionX;
@@ -55,9 +56,9 @@ public class ChunkStoreConverter {
             this.regionX = x;
             this.regionZ = z;
             this.wrappers = wrappers;
-            
+
             this.file = new File(directory, "mcmmo_" + regionX + "_" + regionZ + "_.mcm");
-            this.reads = new AtomicInteger((regionX < 0) && (regionZ < 0) ? 4 : 2 );
+            this.reads = new AtomicInteger((regionX < 0) && (regionZ < 0) ? 4 : 2);
         }
 
         void decrementUses() {
@@ -71,7 +72,8 @@ public class ChunkStoreConverter {
         public void run() {
             try {
                 writeNewRegionFile(regionX, regionZ, wrappers);
-            } catch (Throwable t) {
+            }
+            catch (Throwable t) {
                 throw new RuntimeException(t);
             }
         }
@@ -82,7 +84,7 @@ public class ChunkStoreConverter {
         final Map<List<Integer>, Wrapper> toConvert = new LinkedHashMap<List<Integer>, Wrapper>();
         for (File file : files) {
             final int[] coords = parseFile(file);
-            if (coords == null ) {
+            if (coords == null) {
                 continue;
             }
             int x = coords[0];
@@ -123,6 +125,7 @@ public class ChunkStoreConverter {
 
         MultiProcessor processor = MultiProcessor.newMultiProcessor(threadCount, new ThreadFactory() {
             final AtomicInteger i = new AtomicInteger();
+
             public Thread newThread(Runnable r) {
                 return new Thread(ChunkStoreConverter.class.getName() + "-Processor-" + i.incrementAndGet());
             }
@@ -146,9 +149,12 @@ public class ChunkStoreConverter {
                         Wrapper wrapper = tasks.get(i).get();
                         System.out.println("[mcMMO] " + (i + 1) + " / " + l + ", (" + wrapper.regionX + "," + wrapper.regionZ + ")");
                         break;
-                    } catch (InterruptedException ex) { }
+                    }
+                    catch (InterruptedException ex) {
+                    }
                 }
-            } catch (Throwable t) {
+            }
+            catch (Throwable t) {
                 t.printStackTrace();
             }
         }
@@ -178,7 +184,7 @@ public class ChunkStoreConverter {
             return null;
         }
 
-        return new int[] { rx, rz };
+        return new int[]{rx, rz};
     }
 
     public void writeNewRegionFile(int regionX, int regionZ, Map<List<Integer>, Wrapper> wrappers) throws IOException {
@@ -323,7 +329,8 @@ public class ChunkStoreConverter {
             objectStream.flush();
             objectStream.close();
             data.setDirty(false);
-        } catch (IOException e) {
+        }
+        catch (IOException e) {
             throw new RuntimeException("Unable to write chunk meta data for " + x + ", " + z, e);
         }
     }
