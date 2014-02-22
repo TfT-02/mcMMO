@@ -35,7 +35,7 @@ public class ChunkStoreConverter {
         }
         directory = new File(args[0]);
         if (!directory.isDirectory()) {
-            System.out.println("[mcMMO] Folder path invalid");
+            System.out.println("[mcMMO] Folder path invalid: " + args[0]);
             return;
         }
         if (args.length > 1) {
@@ -162,6 +162,7 @@ public class ChunkStoreConverter {
         objectStream.writeObject(1);
         objectStream.flush();
         objectStream.close();
+        System.out.println("[mcMMO] Conversion done!");
     }
 
     private int[] parseFile(File file) {
