@@ -30,12 +30,12 @@ public class ChunkStoreConverter {
     public static int threadCount = 5;
     public static void main(String[] args) throws IOException, InterruptedException {
         if (args.length == 0) {
-            System.out.println("Need folder path");
+            System.out.println("[mcMMO] Need folder path");
             return;
         }
         directory = new File(args[0]);
         if (!directory.isDirectory()) {
-            System.out.println("Folder path invalid");
+            System.out.println("[mcMMO] Folder path invalid");
             return;
         }
         if (args.length > 1) {
@@ -63,7 +63,7 @@ public class ChunkStoreConverter {
         void decrementUses() {
             if (reads.decrementAndGet() == 0 && file.exists()) {
                 if (!file.delete()) {
-                    System.err.println("Failed to delete `" + file + "'");
+                    System.err.println("[mcMMO] Failed to delete `" + file + "'");
                 }
             }
         }
@@ -82,7 +82,7 @@ public class ChunkStoreConverter {
         final Map<List<Integer>, Wrapper> toConvert = new LinkedHashMap<List<Integer>, Wrapper>();
         for (File file : files) {
             final int[] coords = parseFile(file);
-            if ( coords == null ) {
+            if (coords == null ) {
                 continue;
             }
             int x = coords[0];
@@ -138,13 +138,13 @@ public class ChunkStoreConverter {
             };
             tasks.add(processor.submit(callable));
         }
-        
+
         for (int i = 0, l = tasks.size(); i < l; i++) {
             try {
                 while (true) {
                     try {
                         Wrapper wrapper = tasks.get(i).get();
-                        System.out.println((i + 1) + " / " + l + ", (" + wrapper.regionX + "," + wrapper.regionZ + ")");
+                        System.out.println("[mcMMO] " + (i + 1) + " / " + l + ", (" + wrapper.regionX + "," + wrapper.regionZ + ")");
                         break;
                     } catch (InterruptedException ex) { }
                 }
@@ -325,7 +325,7 @@ public class ChunkStoreConverter {
             throw new RuntimeException("Unable to write chunk meta data for " + x + ", " + z, e);
         }
     }
-            
+
     private PrimitiveChunkStore getChunkStore(McMMOSimpleRegionFile rf, int x, int z) throws IOException {
         InputStream in = rf.getInputStream(x, z);
         if (in == null) {
