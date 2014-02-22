@@ -58,7 +58,7 @@
                 <configuration>
                     <archive>
                         <manifestEntries>
-                          <Main-Class>com.gmail.nossr50.Main</Main-Class>
+                          <Main-Class>net.t00thpick1.mcmmo.converter.ChunkStoreConverter</Main-Class>
                           <Implementation-Title>mcMMO</Implementation-Title>
                           <Implementation-Version>${version}</Implementation-Version>
                           <Implementation-Vendor>mcMMO Team</Implementation-Vendor>

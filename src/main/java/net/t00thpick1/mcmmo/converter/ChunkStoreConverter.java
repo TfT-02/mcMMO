@@ -1,4 +1,4 @@
-package com.gmail.nossr50;
+package net.t00thpick1.mcmmo.converter;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -25,7 +25,7 @@ import com.gmail.nossr50.util.blockmeta.chunkmeta.McMMOSimpleRegionFile;
 import com.gmail.nossr50.util.blockmeta.chunkmeta.PrimitiveChunkStore;
 
 @SuppressWarnings("javadoc")
-public class Main {
+public class ChunkStoreConverter {
     public static File directory;
     public static int threadCount = 5;
     public static void main(String[] args) throws IOException, InterruptedException {
@@ -41,7 +41,7 @@ public class Main {
         if (args.length > 1) {
             threadCount = Integer.valueOf(args[1]);
         }
-        new Main();
+        new ChunkStoreConverter();
     }
     
     class Wrapper implements Runnable {
@@ -81,7 +81,7 @@ public class Main {
         }
     }
 
-    public Main() throws IOException {
+    public ChunkStoreConverter() throws IOException {
         File[] files = directory.listFiles(new ChunkStoreFilter());
         final Map<List<Integer>, Wrapper> toConvert = new LinkedHashMap<List<Integer>, Wrapper>();
         for (File file : files) {
@@ -128,7 +128,7 @@ public class Main {
         MultiProcessor processor = MultiProcessor.newMultiProcessor(threadCount, new ThreadFactory() {
             final AtomicInteger i = new AtomicInteger();
             public Thread newThread(Runnable r) {
-                return new Thread(Main.class.getName() + "-Processor-" + i.incrementAndGet());
+                return new Thread(ChunkStoreConverter.class.getName() + "-Processor-" + i.incrementAndGet());
             }
         });
 
