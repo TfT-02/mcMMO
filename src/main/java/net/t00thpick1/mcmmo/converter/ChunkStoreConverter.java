@@ -187,36 +187,28 @@ public class ChunkStoreConverter {
         File lowerRegion = new File(directory, "mcmmo_" + regionX + "_" + (regionZ + 1) + "_.mcm");
         File lowerLeftRegion = new File(directory, "mcmmo_" + (regionX + 1) + "_" + (regionZ + 1) + "_.mcm");
         if (bulkRegion.isFile()) {
+            // Grab matching region
             int oldRegionX = regionX;
             int oldRegionZ = regionZ;
             McMMOSimpleRegionFile original = new McMMOSimpleRegionFile(bulkRegion, oldRegionX, oldRegionZ, true);
 
-            int chunkX = oldRegionX << 5;
-            if (chunkX < 0) {
-                chunkX++;
-            }
-            for (; chunkX < (oldRegionX << 5) + 32; chunkX++) {
-                int chunkZ = oldRegionZ << 5;
-                if (chunkZ < 0) {
-                    chunkZ++;
-                }
-                for (; chunkZ < (oldRegionZ << 5) + 32; chunkZ++) {
+            for (int chunkX = oldRegionX << 5; chunkX < (oldRegionX << 5) + 32; chunkX++) {
+                for (int chunkZ = oldRegionZ << 5; chunkZ < (oldRegionZ << 5) + 32; chunkZ++) {
                     PrimitiveChunkStore chunk = getChunkStore(original, chunkX, chunkZ);
                     if (chunk == null) {
                         continue;
                     }
                     int newChunkX = chunkX;
+                    // Decrement all those below 0
                     if (chunkX < 0) {
                         newChunkX--;
                     }
                     int newChunkZ = chunkZ;
+                    // Decrement all those below 0
                     if (chunkZ < 0) {
                         newChunkZ--;
                     }
-                    if (newChunkX >> 5 != regionX) {
-                        continue;
-                    }
-                    if (newChunkZ >> 5 != regionZ) {
+                    if (newChunkX >> 5 != regionX || newChunkZ >> 5 != regionZ) {
                         continue;
                     }
                     chunk.convertCoordinatesToVersionOne();
@@ -228,6 +220,7 @@ public class ChunkStoreConverter {
             wrappers.get(Arrays.asList(oldRegionX, oldRegionZ)).decrementUses();
         }
         if (leftRegion.isFile() && regionX < 0) {
+            // Grab region to the left
             int oldRegionX = regionX + 1;
             int oldRegionZ = regionZ;
             McMMOSimpleRegionFile original = new McMMOSimpleRegionFile(leftRegion, oldRegionX, oldRegionZ, true);
@@ -239,14 +232,16 @@ public class ChunkStoreConverter {
                     continue;
                 }
                 int newChunkX = chunkX;
+                // Actual region coord is negative, so we want all 0 and below to decrement
                 if (chunkX <= 0) {
                     newChunkX--;
                 }
                 int newChunkZ = chunkZ;
+                // Decrement all those below 0
                 if (chunkZ < 0) {
                     newChunkZ--;
                 }
-                if (newChunkX >> 5 != regionX) {
+                if (newChunkX >> 5 != regionX || newChunkZ >> 5 != regionZ) {
                     continue;
                 }
                 chunk.convertCoordinatesToVersionOne();
@@ -257,25 +252,28 @@ public class ChunkStoreConverter {
             wrappers.get(Arrays.asList(oldRegionX, oldRegionZ)).decrementUses();
         }
         if (lowerRegion.isFile() && regionZ < 0) {
+            // Grab region below
             int oldRegionX = regionX;
             int oldRegionZ = regionZ + 1;
             McMMOSimpleRegionFile original = new McMMOSimpleRegionFile(lowerRegion, oldRegionX, oldRegionZ, true);
 
-            int chunkZ = (oldRegionZ << 5);
+            int chunkZ = oldRegionZ << 5;
             for (int chunkX = oldRegionX << 5; chunkX < (oldRegionX << 5) + 32; chunkX++) {
                 PrimitiveChunkStore chunk = getChunkStore(original, chunkX, chunkZ);
                 if (chunk == null) {
                     continue;
                 }
                 int newChunkX = chunkX;
+                // Decrement all those below 0
                 if (chunkX < 0) {
                     newChunkX--;
                 }
                 int newChunkZ = chunkZ;
+                // Actual region coord is negative, so we want all 0 and below to decrement
                 if (chunkZ <= 0) {
                     newChunkZ--;
                 }
-                if (newChunkZ >> 5 != regionZ) {
+                if (newChunkX >> 5 != regionX || newChunkZ >> 5 != regionZ) {
                     continue;
                 }
                 chunk.convertCoordinatesToVersionOne();
@@ -286,6 +284,7 @@ public class ChunkStoreConverter {
             wrappers.get(Arrays.asList(oldRegionX, oldRegionZ)).decrementUses();
         }
         if (lowerLeftRegion.isFile() && regionX < 0 && regionZ < 0) {
+            // Grab region to the left and below
             int oldRegionX = regionX + 1;
             int oldRegionZ = regionZ + 1;
             McMMOSimpleRegionFile original = new McMMOSimpleRegionFile(lowerLeftRegion, oldRegionX, oldRegionZ, true);
@@ -295,10 +294,12 @@ public class ChunkStoreConverter {
             PrimitiveChunkStore chunk = getChunkStore(original, chunkX, chunkZ);
             if (chunk != null) {
                 int newChunkX = chunkX;
+                // Actual region coord is negative, so we want all 0 and below to decrement
                 if (chunkX <= 0) {
                     newChunkX--;
                 }
                 int newChunkZ = chunkZ;
+                // Actual region coord is negative, so we want all 0 and below to decrement
                 if (chunkZ <= 0) {
                     newChunkZ--;
                 }
