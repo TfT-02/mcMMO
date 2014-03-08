@@ -33,6 +33,7 @@ import com.gmail.nossr50.listeners.WorldListener;
 import com.gmail.nossr50.locale.LocaleLoader;
 import com.gmail.nossr50.metrics.MetricsManager;
 import com.gmail.nossr50.party.PartyManager;
+import com.gmail.nossr50.runnables.CheckChunkStoreTask;
 import com.gmail.nossr50.runnables.SaveTimerTask;
 import com.gmail.nossr50.runnables.backups.CleanBackupsTask;
 import com.gmail.nossr50.runnables.database.UserPurgeTask;
@@ -460,6 +461,9 @@ public class mcMMO extends JavaPlugin {
 
         // Cleanup the backups folder
         new CleanBackupsTask().runTaskAsynchronously(mcMMO.p);
+
+        // Check ChunkStore format of every world
+        new CheckChunkStoreTask().runTaskAsynchronously(mcMMO.p);
 
         // Bleed timer (Runs every two seconds)
         new BleedTimerTask().runTaskTimer(this, 2 * Misc.TICK_CONVERSION_FACTOR, 2 * Misc.TICK_CONVERSION_FACTOR);

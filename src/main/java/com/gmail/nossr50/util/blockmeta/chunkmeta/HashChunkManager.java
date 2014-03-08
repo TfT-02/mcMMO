@@ -1,6 +1,7 @@
 package com.gmail.nossr50.util.blockmeta.chunkmeta;
 
 import java.io.File;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
@@ -143,6 +144,55 @@ public class HashChunkManager implements ChunkManager {
     }
 
     @Override
+    public void checkAllWorlds() {
+        mcMMO.p.debug("Checking all worlds if the old mcMMO ChunkStore format is present.");
+
+        List<String> worldList = new ArrayList();
+        for (World worlds : mcMMO.p.getServer().getWorlds()) {
+            File file = new File(new File(worlds.getWorldFolder(), "mcmmo_regions"), "mcMMO.format");
+            UUID key = worlds.getUID();
+
+            if (!file.isFile()) {
+                worldList.add(worlds.getName());
+                oldData.put(key, true);
+            }
+            else {
+                oldData.put(key, false);
+            }
+        }
+
+        mcMMO.p.getLogger().severe("The following worlds are using a mcMMO ChunkStore format with known exploits and need conversion:");
+        mcMMO.p.getLogger().severe(worldList.toString());
+        mcMMO.p.getLogger().severe("It is recommended that you convert these worlds to the new file format for them immediately.");
+        mcMMO.p.getLogger().severe("Instructions to do so can be found at www.placeholderURL.com"); // TODO: Real link
+        saveWorldsToConvert(worldList);
+    }
+
+    public static void saveWorldsToConvert(List<String> worlds) {
+        File toConvertFile = new File(mcMMO.p.getDataFolder().getParentFile().getParent(), "worldsToConvert.yml");
+
+        if (toConvertFile.exists()) {
+            if (!toConvertFile.delete()) {
+                mcMMO.p.getLogger().warning("Could not delete worldsToConvert.yml");
+                return;
+            }
+        }
+
+        try {
+            FileWriter fileWriter = new FileWriter(toConvertFile);
+            String newLine = System.getProperty("line.separator");
+
+            for (String worldName : worlds) {
+                fileWriter.write(worldName + newLine);
+            }
+            fileWriter.close();
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    @Override
     public synchronized void loadChunk(int cx, int cz, World world, Entity[] entities) {
         if (world == null || store.containsKey(world.getName() + "," + cx + "," + cz)) {
             return;
@@ -155,11 +205,6 @@ public class HashChunkManager implements ChunkManager {
             File file = new File(new File(world.getWorldFolder(), "mcmmo_regions"), "mcMMO.format");
             if (!file.isFile()) {
                 mcMMO.p.getLogger().severe("World " + world.getName() + " is using a mcMMO ChunkStore format with known exploits.");
-                mcMMO.p.getLogger().severe("It is recommended that you convert to the new file format for them immediately.");
-                mcMMO.p.getLogger().severe("Instructions to do so can be found at www.placeholderURL.com"); // TODO: Real link
-                oldData.put(key, true);
-            } else {
-                oldData.put(key, false);
             }
         }
         else if (oldData.get(key)) {

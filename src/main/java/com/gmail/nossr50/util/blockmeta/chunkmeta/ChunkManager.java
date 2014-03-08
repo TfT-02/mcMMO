@@ -114,6 +114,8 @@ public interface ChunkManager {
      */
     public void unloadAll();
 
+    public void checkAllWorlds();
+
     /**
      * Check to see if a given location is set to true
      *

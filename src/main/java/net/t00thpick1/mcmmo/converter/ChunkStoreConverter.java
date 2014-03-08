@@ -1,12 +1,16 @@
 package net.t00thpick1.mcmmo.converter;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.FilenameFilter;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Comparator;
@@ -30,19 +34,34 @@ public class ChunkStoreConverter {
     public static int threadCount = 5;
 
     public static void main(String[] args) throws IOException, InterruptedException {
-        if (args.length == 0) {
-            System.out.println("[mcMMO] Need folder path");
+        String workingPath = System.getProperty("user.dir") + File.separator;
+        File toConvertFile = new File(workingPath, "worldsToConvert.yml");
+
+        if (!toConvertFile.exists()) {
+            System.out.println("[mcMMO] worldsToConvert.yml was not found!");
             return;
         }
-        directory = new File(args[0]);
-        if (!directory.isDirectory()) {
-            System.out.println("[mcMMO] Folder path invalid: " + args[0]);
-            return;
+
+        InputStream inputStream = new FileInputStream(toConvertFile);
+        BufferedReader bufferedReader = new BufferedReader(new InputStreamReader(inputStream, Charset.forName("UTF-8")));
+
+        String worldName;
+
+        while ((worldName = bufferedReader.readLine()) != null) {
+            directory = new File(workingPath, worldName + File.separator + "mcmmo_regions");
+
+            if (!directory.isDirectory()) {
+                System.out.println("[mcMMO] Folder path invalid: " + directory.toString());
+                return;
+            }
+            if (args.length > 0) {
+                threadCount = Integer.valueOf(args[0]);
+                System.out.println("[mcMMO] Using " + threadCount + " threads.");
+            }
+            new ChunkStoreConverter();
         }
-        if (args.length > 1) {
-            threadCount = Integer.valueOf(args[1]);
-        }
-        new ChunkStoreConverter();
+
+        bufferedReader.close();
     }
 
     class Wrapper implements Runnable {
@@ -168,7 +187,7 @@ public class ChunkStoreConverter {
         objectStream.writeObject(1);
         objectStream.flush();
         objectStream.close();
-        System.out.println("[mcMMO] Conversion done!");
+        System.out.println("[mcMMO] Conversion done for world: " + directory.getParentFile().getName());
     }
 
     private int[] parseFile(File file) {
